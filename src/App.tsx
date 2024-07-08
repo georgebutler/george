@@ -10,20 +10,32 @@ import {
 
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface Story {
+  id: number;
+  title: string;
+  url: string;
+  text: string;
+}
+
+interface StorySummary {
+  id: number;
+  data: Story | null;
+}
+
 function App() {
-  const [stories, setStories] = useState([]);
-  const [loadingIds, setLoadingIds] = useState([]);
+  const [stories, setStories] = useState<StorySummary[]>([]);
+  const [, setLoadingIds] = useState<number[]>([]);
 
   useEffect(() => {
     axios
-      .get("https://hacker-news.firebaseio.com/v0/showstories.json?print=pretty")
+      .get<number[]>("https://hacker-news.firebaseio.com/v0/showstories.json?print=pretty")
       .then((response) => {
         const storyIds = response.data.slice(0, 10);
         setStories(storyIds.map((id) => ({ id, data: null })));
         const storyDetailsPromises = storyIds.map((id) => {
           setLoadingIds((prev) => [...prev, id]);
           return axios
-            .get(`https://hacker-news.firebaseio.com/v0/item/${id}.json?print=pretty`)
+            .get<Story>(`https://hacker-news.firebaseio.com/v0/item/${id}.json?print=pretty`)
             .then((response) => {
               setStories((prevStories) =>
                 prevStories.map((story) =>
